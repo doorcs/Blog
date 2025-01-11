@@ -4,7 +4,8 @@ services:
     image: ghost:5.105 # 버전업에 안정적으로 대응하기 위해 버전을 명시
     container_name: ghost
     depends_on:
-      - db
+      db:
+        condition: service_healthy # db 컨테이너가 완전히 실행된 다음 ghost 컨테이너 실행
     restart: always
     ports:
       - ${GHOST_PORT}:2368 # 도커의 2368 포트를 호스트의 포트에 매핑 ( 안 해주면 브라우저에서 접근 불가! )
@@ -22,6 +23,12 @@ services:
   db:
     image: mysql:8.0
     container_name: db
+    healthcheck: # https://github.com/docker-library/mysql/issues/930 참고
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "--silent"]
+      interval: 3s
+      timeout: 2s
+      retries: 3
+      start_period: 0s
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
