@@ -1,0 +1,36 @@
+services:
+
+  ghost:
+    image: ghost:5.105 # 버전업에 안정적으로 대응하기 위해 버전을 명시
+    container_name: ghost
+    depends_on:
+      - db
+    restart: always
+    ports:
+      - ${GHOST_PORT}:2368 # 도커의 2368 포트를 호스트의 포트에 매핑 ( 안 해주면 브라우저에서 접근 불가! )
+    environment:
+      database__client: ${GHOST_DB_CLIENT}
+      database__connection__host: ${GHOST_DB_HOST}
+      database__connection__port: ${GHOST_DB_PORT}
+      database__connection__user: ${MYSQL_USER}
+      database__connection__password: ${MYSQL_PASSWORD}
+      database__connection__database: ${MYSQL_DATABASE}
+      url: ${GHOST_URL}
+    volumes:
+      - ghost_data:/var/lib/ghost/content
+
+  db:
+    image: mysql:8.0
+    container_name: db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+    volumes:
+      - db_data:/var/lib/mysql
+
+volumes:
+  ghost_data:
+  db_data:
