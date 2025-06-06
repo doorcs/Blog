@@ -1,0 +1,28 @@
+#!/bin/bash
+
+set -e
+
+# 변수 설정
+PARAM=${1:-$(date +%y%m%d)}
+GENERATOR=/Users/castledoor/ghost-static-site-generator/src/index.js
+DIR=/Users/castledoor/doorcs.github.io
+URL=http://doorcs.github.io
+
+# 정적 사이트 생성
+node $GENERATOR --url=$URL
+
+# rsync를 통한 디렉토리 동기화
+rsync -a --delete \
+      --exclude='.git/' \
+      --exclude='.github/' \
+      --exclude='.gitignore' \
+      static/ $DIR/
+
+# 임시 디렉토리 삭제
+rm -rf static
+
+# 커밋 및 푸시
+cd $DIR
+git add .
+git commit -m "$PARAM"
+git push origin main
